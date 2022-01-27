@@ -20,13 +20,15 @@ public class PerAgentControl : MonoBehaviour
             if (agent.foodDestination == other.transform.position) 
             {
                 agent.resetWander = true;
-            } 
+            }
+
+            Storage.agents[localID].resetWander = false;
         }
         other.gameObject.SetActive(false);
         Storage.agents[localID].foodGotten += 1;
         Storage.agents[localID].gettingFood = false;
         gettingFood = false;
         collectedFood += 1;
-        Debug.Log(localID  + " got food");
+        //Debug.Log(localID  + " got food");
     }
 }

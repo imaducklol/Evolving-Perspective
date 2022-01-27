@@ -24,7 +24,7 @@ public class Control : MonoBehaviour
     private int speedMult   = 3;
     private float deathMult   = 1/20f;
     private int senseMult   = 5;
-    private float offspringVarience = .2f;
+    //private float offspringVarience = .2f;
     
     private bool cycleComplete = false;
 
@@ -116,7 +116,7 @@ public class Control : MonoBehaviour
             // Going home
             if (agent.foodGotten >= 2 && !agent.goingHome)
                 Home(agent);
-            if(agent.foodGotten <2 && !WallAttainable(agent))
+            if(agent.foodGotten < 2 && !WallAttainable(agent))
                 Home(agent);
             
             // Wander if close to end of last 
@@ -178,7 +178,7 @@ public class Control : MonoBehaviour
                 }
             }
         }
-        
+
         agents.Clear();
         agents.TrimExcess();
 
@@ -247,7 +247,7 @@ public class Control : MonoBehaviour
     
     void GetFood(Agent agent)
     {
-        Vector3 posibleFood = GetClosestFood(foodPos, agent.obj.transform.position);
+        Vector3 posibleFood = GetClosestFood(agent.obj.transform.position);
         if ((agent.obj.transform.position - posibleFood).magnitude < agent.sense * senseMult)
         {
             agent.obj.GetComponent<NavMeshAgent>().SetDestination(posibleFood);
@@ -295,7 +295,7 @@ public class Control : MonoBehaviour
         //Debug.Log(agent.id + " going home");
     }
 
-    Vector3 GetClosestFood(List<Vector3> foodPos, Vector3 agentPos)
+    Vector3 GetClosestFood(Vector3 agentPos)
     {
         // Initial Values
         Vector3 bestTarget = Vector3.zero;
