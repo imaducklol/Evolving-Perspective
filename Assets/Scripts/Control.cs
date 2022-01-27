@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 public class Control : MonoBehaviour
 {
-    public List<GameObject> FoodObj = Storage.FoodObj;
-    public List<Vector3>    FoodPos = Storage.FoodPos;
-    public List<Agent>      Agents  = Storage.Agents;
+    public List<GameObject> foodObj = Storage.foodObj;
+    public List<Vector3>    foodPos = Storage.foodPos;
+    public List<Agent>      agents  = Storage.agents;
 
     [SerializeField] GameObject agentPrefab;
     [SerializeField] GameObject foodPrefab;
@@ -21,7 +22,7 @@ public class Control : MonoBehaviour
     // Agent things
     private int wanderRange = 10;
     private int speedMult   = 3;
-    private int deathMult   = 10;
+    private float deathMult   = 1/20f;
     private int senseMult   = 5;
     private float offspringVarience = .2f;
     
@@ -35,11 +36,8 @@ public class Control : MonoBehaviour
         // Spawn Initial Agents
         for (int i = 0; i < initialAgentQuantity; i++)
         {
-            // The agent
-            GameObject agent;
-
             // Initiate with agent prefab
-            agent = Instantiate(agentPrefab);
+            GameObject agent = Instantiate(agentPrefab);
             
             // Place the agent on one of the four edges
             switch (Random.Range(0, 4))
@@ -62,15 +60,16 @@ public class Control : MonoBehaviour
             agent.transform.SetParent(agentParent, false);
             
             // Add agent to list
-            Agents.Add(new Agent());
-            Agents[i].obj = agent;
-            Agents[i].id = i;
+            agents.Add(new Agent());
+            agents[i].obj = agent;
+            agents[i].id = i;
+            agents[i].obj.name = i.ToString();
             agent.GetComponent<PerAgentControl>().localID = i;
             
             
             // Nav Setup
-            agent.GetComponent<NavMeshAgent>().speed = Agents[Agents.Count - 1].speed * speedMult;
-            Wander(Agents[Agents.Count-1].obj);
+            agent.GetComponent<NavMeshAgent>().speed = agents[agents.Count - 1].speed * speedMult;
+            Wander(agents[agents.Count-1].obj);
             
         }
     }
@@ -85,196 +84,177 @@ public class Control : MonoBehaviour
 
     void UpdateAgents()
     {
-        foreach (Agent agent in Agents)
+        foreach (Agent agent in agents)
         {
-            //Debug.Log(agent.foodGotten);
-
-            NavMeshAgent agentNav = agent.obj.GetComponent<NavMeshAgent>();
+            if (agent.done)
+                continue;
             
             // Energy
-            agent.energy -= Time.deltaTime * (agent.speed + agent.sense) / deathMult;
-            //Debug.Log(agent.energy);
+            agent.energy -= Time.deltaTime * (agent.speed + agent.sense) * deathMult;
             if (agent.energy <= 0 && !agent.safe) 
             {
                 agent.obj.SetActive(false);
                 agent.done = true;
                 continue;
             }
-
-            // Wander if close to end of last 
-            if (agentNav.remainingDistance <= agentNav.stoppingDistance && agent.wanderingForFood) 
-            {
-                agent.wanderingForFood = true;
-                agent.obj.GetComponent<PerAgentControl>().wanderingForFood = true;
-                Wander(agent.obj);
-            }
-        
-            // Looking for target
-            if (FoodPos.Count > 0 && agent.wanderingForFood && !agent.goingHome) 
-            {
-                Vector3 posibleFood = GetClosestFood(FoodPos, agent.obj.transform.position);
-                if ((agent.obj.transform.position - posibleFood).magnitude < agent.sense * senseMult)
-                {
-                    agentNav.SetDestination(posibleFood);
-                    agent.foodDestination = posibleFood;
-                    agent.wanderingForFood = false;
-                    agent.obj.GetComponent<PerAgentControl>().wanderingForFood = false;            
-                }
-            }
+            
             // If another agent gets to the food first
             if (agent.resetWander) 
             {
                 agent.resetWander = false;
-                Wander(agent.obj);
-                agent.wanderingForFood = true;
-                agent.obj.GetComponent<PerAgentControl>().wanderingForFood = true;
-
+                agent.gettingFood = false;
+                //Debug.Log(agent.id + " reset wander called");
+                
             }
+            
+            // Trying to get food, checking if a wall is still reachable in time and if theres any food left
+            if (agent.foodGotten < 1 && !agent.gettingFood)
+                GetFood(agent);
+            if (WallAttainable(agent) && agent.foodGotten < 2 && foodPos.Count > 0 && !agent.gettingFood && !agent.goingHome)
+                GetFood(agent);
 
-            // Home
-            if (agent.foodGotten >= 1 && !agent.goingHome) 
+            // Going home
+            if (agent.foodGotten >= 2 && !agent.goingHome)
+                Home(agent);
+            if(agent.foodGotten <2 && !WallAttainable(agent))
+                Home(agent);
+            
+            // Wander if close to end of last 
+            NavMeshAgent agentNav = agent.obj.GetComponent<NavMeshAgent>();
+            if (agentNav.remainingDistance <= agentNav.stoppingDistance && !agent.gettingFood && !agent.goingHome) 
             {
-                //Debug.Log(agent.id);
-                agent.goingHome = true;
-                agent.obj.GetComponent<PerAgentControl>().goingHome = true;
-                agent.wanderingForFood = false;
-                agent.obj.GetComponent<PerAgentControl>().wanderingForFood = false;
-                Home(agent.obj);
+                Wander(agent.obj);
+                //Debug.Log(agent.id + " is wandering");
             }
+        
+            
 
             // Home?
-            if ((Mathf.Abs(agent.obj.transform.position.x) >= 18 || Mathf.Abs(agent.obj.transform.position.z) >= 18) && agent.foodGotten >= 1 && !agent.safe) 
+            if ((Mathf.Abs(agent.obj.transform.position.x) >= 19 || Mathf.Abs(agent.obj.transform.position.z) >= 19) && agent.foodGotten >= 1) 
             {
                 agent.safe = true; 
                 agent.obj.GetComponent<PerAgentControl>().safe = true;
                 agent.done = true;
                 agent.obj.GetComponent<PerAgentControl>().done = true;
+                agent.obj.GetComponent<NavMeshAgent>().velocity = Vector3.zero;
+                agent.obj.GetComponent<NavMeshAgent>().speed = 0;
             }            
         }
 
         CheckCompletion();
     }
-    
+
+
     void NewAgentCycle()
     {
-        foreach (Agent agent in Agents) 
+        foreach (Agent agent in agents) 
+        {
+            agent.position = agent.obj.transform.position;
+            Destroy(agent.obj);
+        }
+        
+        
+        // Transfer surviving agents
+        List<Agent> newAgents = new List<Agent>();
+        foreach (Agent agent in agents)
+        {
+            if (agent.foodGotten > 0 && agent.safe)
             {
-                agent.position = agent.obj.transform.position;
-                Destroy(agent.obj);
-            }
-            
-            
-            // Transfer surviving agents
-            List<Agent> NewAgents = new List<Agent>();
-            for (int i = 0; i < Agents.Count; i++)
-            {
-                if (Agents[i].foodGotten > 0 && Agents[i].safe) 
+                // Surviving
+                newAgents.Add(new Agent());
+                newAgents[newAgents.Count - 1].size     = agent.size;
+                newAgents[newAgents.Count - 1].speed    = agent.speed;
+                newAgents[newAgents.Count - 1].sense    = agent.sense;
+                newAgents[newAgents.Count - 1].position = agent.position; 
+                
+                // Offspring
+                if (agent.foodGotten > 1)
                 {
-                    // Surviving
-                    NewAgents.Add(new Agent());
-                    NewAgents[NewAgents.Count-1].energy = Agents[i].energy;
-                    NewAgents[NewAgents.Count-1].size = Agents[i].size;
-                    NewAgents[NewAgents.Count-1].speed = Agents[i].speed;
-                    NewAgents[NewAgents.Count-1].sense = Agents[i].sense;
-                    NewAgents[NewAgents.Count-1].position = Agents[i].position;
-                    
-                    // Offspring
-                    if (Agents[i].foodGotten > 1)
-                    {
-                        NewAgents.Add(new Agent());
-                        NewAgents[NewAgents.Count-1].energy = Agents[i].energy;
-                        NewAgents[NewAgents.Count-1].size  = Agents[i].size ;
-                        NewAgents[NewAgents.Count-1].speed = Agents[i].speed + Random.Range(-offspringVarience, offspringVarience);
-                        NewAgents[NewAgents.Count-1].sense = Agents[i].sense + Random.Range(-offspringVarience, offspringVarience);
-                        NewAgents[NewAgents.Count-1].position = Agents[i].position;
-                    }
+                    newAgents.Add(new Agent());
+                    newAgents[newAgents.Count - 1].size     = agent.size;
+                    newAgents[newAgents.Count - 1].speed    = agent.speed; // + Random.Range(-offspringVarience, offspringVarience);
+                    newAgents[newAgents.Count - 1].sense    = agent.sense; // + Random.Range(-offspringVarience, offspringVarience);
+                    newAgents[newAgents.Count - 1].position = agent.position;
                 }
-
             }
-            
-            Agents.Clear();
-            Agents.TrimExcess();
+        }
+        
+        agents.Clear();
+        agents.TrimExcess();
 
-            foreach (Agent agent in NewAgents) {Agents.Add(agent);} 
+        foreach (Agent agent in newAgents) {agents.Add(agent);} 
 
-            // Recreating the objecters for each agent
-            foreach (Agent agent in Agents)
-            {
-                // The agent object
-                GameObject agentObj;
-                // Initiate with agent prefab
-                agentObj = Instantiate(agentPrefab);
+        // Recreating the objecters for each agent
+        foreach (Agent agent in agents)
+        {
+            // The agent object
+            // Initiate with agent prefab
+            GameObject agentObj = Instantiate(agentPrefab);
 
-                agentObj.transform.position = agent.position;
-                /*            
-                // Place the agent on one of the four edges
-                switch (Random.Range(0, 4))
-                {
-                    case 0:
-                        agentObj.transform.position = new Vector3(20, 1, Random.Range(-20, 20));
-                        break;
-                    case 1:
-                        agentObj.transform.position = new Vector3(-20, 1, Random.Range(-20, 20));
-                        break;
-                    case 2:
-                        agentObj.transform.position = new Vector3(Random.Range(-20, 20), 1, 20);
-                        break;
-                    case 3:
-                        agentObj.transform.position = new Vector3(Random.Range(-20, 20), 1, -20);
-                        break;
-                }*/
-                            
-                // Set the agent parent for organization
-                agentObj.transform.SetParent(agentParent, false);
+            agentObj.transform.position = agent.position;
+                        
+            // Set the agent parent for organization
+            agentObj.transform.SetParent(agentParent, false);
 
-                agent.obj = agentObj;
-                //agent.obj.GetComponent<PerAgentControl>().localID = agent.id;
+            agent.obj = agentObj;
 
-                // Nav Setup
-                agent.obj.GetComponent<NavMeshAgent>().speed = agent.speed * speedMult;
-                Wander(agent.obj);
+            // Nav Setup
+            agent.obj.GetComponent<NavMeshAgent>().speed = agent.speed * speedMult;
+            Wander(agent.obj);
 
-                agent.obj.SetActive(true);
-            }
-            
-            // ID shenanigins
-            for (int i = 0; i < Agents.Count; i++) 
-            {
-                Agents[i].id = i;
-                Agents[i].obj.name = i.ToString();
-                Agents[i].obj.GetComponent<PerAgentControl>().localID = i;
-            }
+            agent.obj.SetActive(true);
+        }
+        
+        // ID shenanigins
+        for (int i = 0; i < agents.Count; i++) 
+        {
+            agents[i].id = i;
+            agents[i].obj.name = i.ToString();
+            agents[i].obj.GetComponent<PerAgentControl>().localID = i;
+        }
 
-            //foreach (Agent agent in Agents) {ResetAgent(agent);}
+        //foreach (Agent agent in Agents) {ResetAgent(agent);}
 
-            // Destroy all the old deactivated food
-            foreach (GameObject food in FoodObj)
-            {
-                Destroy(food);
-            }
-            FoodPos.Clear();
-            // Spawn new food
-            SpawnFood();
+        // Destroy all the old deactivated food
+        foreach (GameObject food in foodObj)
+        {
+            Destroy(food);
+        }
+        foodPos.Clear();
+        // Spawn new food
+        SpawnFood();
 
-            cycleComplete = false;
+        cycleComplete = false;
     }
 
     void SpawnFood()
     {
-        FoodObj.Clear();
-        FoodPos.Clear();
+        foodObj.Clear();
+        foodPos.Clear();
         // Spawn Food
         for (int i = 0; i < initialFoodQuantity; i++) {
             // The food
-            GameObject food;
             // Initiate with food prefab
-            food = Instantiate(foodPrefab);
+            GameObject food = Instantiate(foodPrefab);
             // Random location across the floor
             food.transform.position = new Vector3(Random.Range(-foodRange, foodRange), .5f, Random.Range(-foodRange, foodRange));
             // Set the food parent for organization
             food.transform.SetParent(foodParent, false);
-            FoodPos.Add(food.transform.position);
-            FoodObj.Add(food);
+            foodPos.Add(food.transform.position);
+            foodObj.Add(food);
+        }
+    }
+    
+    void GetFood(Agent agent)
+    {
+        Vector3 posibleFood = GetClosestFood(foodPos, agent.obj.transform.position);
+        if ((agent.obj.transform.position - posibleFood).magnitude < agent.sense * senseMult)
+        {
+            agent.obj.GetComponent<NavMeshAgent>().SetDestination(posibleFood);
+            agent.foodDestination = posibleFood;
+            agent.gettingFood = true;
+            agent.obj.GetComponent<PerAgentControl>().gettingFood = true;
+            //Debug.Log(agent.id + " set food");
         }
     }
 
@@ -289,19 +269,30 @@ public class Control : MonoBehaviour
         }
     }
 
-    void Home(GameObject obj)
+    void Home(Agent agent)
     {
-        Vector3 pos = obj.transform.position;
+        Vector3 pos = agent.obj.transform.position;
         Vector3 center = Vector3.zero;
         if (Mathf.Abs(center.x - pos.x) > Mathf.Abs(center.z - pos.z)) 
         {
-            if (pos.x > 0) {pos.x = 20;} else {pos.x = -20;}
-        } 
-        else 
-        {
-            if (pos.z > 0) {pos.z = 20;} else {pos.z = -20;}
+            if (pos.x > 0) 
+                pos.x = 20; 
+            else
+                pos.x = -20;
         }
-        obj.GetComponent<NavMeshAgent>().SetDestination(pos);
+        else
+        {
+            if (pos.z > 0) 
+                pos.z = 20;
+            else 
+                pos.z = -20;
+        }
+        
+        agent.obj.GetComponent<NavMeshAgent>().SetDestination(pos);
+        
+        agent.goingHome = true;
+        agent.obj.GetComponent<PerAgentControl>().goingHome = true;
+        //Debug.Log(agent.id + " going home");
     }
 
     Vector3 GetClosestFood(List<Vector3> foodPos, Vector3 agentPos)
@@ -326,26 +317,34 @@ public class Control : MonoBehaviour
         return bestTarget;
     }
 
+    bool WallAttainable(Agent agent)
+    {
+        Vector3 objPos = agent.obj.transform.position;
+        float speed = agent.obj.GetComponent<NavMeshAgent>().speed;
+        float timeRemaining = agent.energy / (agent.speed + agent.sense) * deathMult - 1;
+        
+        float distToXpos = objPos.x - 20;
+        float distToXneg = objPos.x + 20;
+        float distToZpos = objPos.z - 20;
+        float distToZneg = objPos.z + 20;
+        
+        if (distToXpos < distToXpos * speed * timeRemaining &&
+            distToXneg < distToXneg * speed * timeRemaining &&
+            distToZpos < distToZpos * speed * timeRemaining &&
+            distToZneg < distToZneg * speed * timeRemaining)
+            return false;
+        return true;
+    }
+    
     void CheckCompletion() 
     {
         bool isComplete = true;
-        foreach (Agent agent in Agents) 
+        foreach (Agent agent in agents) 
         {
             if (!agent.done) {isComplete = false;}
         }
         if (isComplete) {Debug.Log("complete");}
         cycleComplete = isComplete;
     }
-
-    void ResetAgent(Agent agent)
-    {
-        agent.energy           = 1;
-        agent.foodGotten       = 0;
-        agent.wanderingForFood = true;
-        agent.goingHome        = false;
-        agent.foodDestination  = Vector3.positiveInfinity;
-        agent.resetWander      = false;
-        agent.safe             = false;
-        agent.done             = false;
-    }
+    
 }

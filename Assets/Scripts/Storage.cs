@@ -4,9 +4,9 @@ using UnityEngine;
 
 public static class Storage
 {
-    public static List<GameObject>  FoodObj = new List<GameObject>();
-    public static List<Vector3>     FoodPos = new List<Vector3>();
-    public static List<Agent>       Agents  = new List<Agent>();
+    public static List<GameObject>  foodObj = new List<GameObject>();
+    public static List<Vector3>     foodPos = new List<Vector3>();
+    public static List<Agent>       agents  = new List<Agent>();
 
 }
 
@@ -20,12 +20,12 @@ public class Agent {
     public int foodGotten = 0;
 
     // States
-    public bool wanderingForFood = true;
-    public bool goingHome        = false;
+    public bool goingHome = false;
+    public bool gettingFood;
 
     // Food stuff
     public Vector3 foodDestination;
-    public bool resetWander = true;
+    public bool resetWander = false;
 
     public bool safe = false;
     public bool done = false;

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.2846214, g: 0.37120992, b: 0.498806, a: 1}
+  m_IndirectSpecularColor: {r: 0.28462005, g: 0.37120837, b: 0.4988044, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -133,7 +133,6 @@ GameObject:
   m_Component:
   - component: {fileID: 148941348}
   - component: {fileID: 148941347}
-  - component: {fileID: 148941349}
   m_Layer: 0
   m_Name: Control
   m_TagString: Untagged
@@ -153,16 +152,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 039ec539524fd8d4099a25a4a7a2ad94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FoodObj: []
-  FoodPos: []
+  foodObj: []
+  foodPos: []
   agentPrefab: {fileID: 3077712204648589320, guid: 77d30c3410118344099cd07e7e706179, type: 3}
   foodPrefab: {fileID: 6014245900690354835, guid: 3538a45ce0affb8448f3b6f540e63905, type: 3}
   agentParent: {fileID: 1233425571}
   foodParent: {fileID: 1167303631}
   initialAgentQuantity: 40
   initialFoodQuantity: 30
-  maximumModifier: 0
-  foodRange: 19
+  maximumModifier: 2
+  foodRange: 18
 --- !u!4 &148941348
 Transform:
   m_ObjectHideFlags: 0
@@ -177,28 +176,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &148941349
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148941346}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 304d700aa898a4241a5b046a3e13d077, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FoodObj: []
-  FoodPos: []
-  agentPrefab: {fileID: 0}
-  foodPrefab: {fileID: 0}
-  agentParent: {fileID: 0}
-  foodParent: {fileID: 0}
-  initialAgentQuantity: 0
-  initialFoodQuantity: 0
-  maximumModifier: 0
-  foodRange: 0
 --- !u!1 &341672888
 GameObject:
   m_ObjectHideFlags: 0

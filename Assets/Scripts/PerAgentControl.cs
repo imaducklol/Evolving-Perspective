@@ -7,16 +7,15 @@ public class PerAgentControl : MonoBehaviour
 {
     public int  localID;
     public int  collectedFood;
-    public bool isNew;
-    public bool wanderingForFood;
+    public bool gettingFood;
     public bool goingHome;
     public bool safe;
     public bool done;
 
     private void OnTriggerEnter(Collider other)
     {
-        Storage.FoodPos.Remove(other.transform.position);
-        foreach (Agent agent in Storage.Agents) 
+        Storage.foodPos.Remove(other.transform.position);
+        foreach (Agent agent in Storage.agents) 
         {
             if (agent.foodDestination == other.transform.position) 
             {
@@ -24,9 +23,10 @@ public class PerAgentControl : MonoBehaviour
             } 
         }
         other.gameObject.SetActive(false);
-        Storage.Agents[localID].foodGotten += 1;
+        Storage.agents[localID].foodGotten += 1;
+        Storage.agents[localID].gettingFood = false;
+        gettingFood = false;
         collectedFood += 1;
         Debug.Log(localID  + " got food");
-        Debug.Log("food gotten in global storage " + Storage.Agents[localID].foodGotten);
     }
 }
