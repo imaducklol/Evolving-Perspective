@@ -1,17 +1,7 @@
-ISSUES:
-Agent wont die for some reason
-
-Food positions are still destinations after its been taken
-
-everything is broken and idk why;;
-
-wandering dont work /shurg
-
-
-
-WELL 
-I maybe fixed some of that? maybe i broke more? 
-they dont go home after they find food but they are finding food properly\
-
-
 https://thoughtbot.com/blog/how-to-git-with-unity
+
+TO DO:
+spread food
+actually implement evolution
+dynamic colors
+cool evo graph

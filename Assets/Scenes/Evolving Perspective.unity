@@ -152,14 +152,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 039ec539524fd8d4099a25a4a7a2ad94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  foodObj: []
-  foodPos: []
+  foodObj:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  foodPos:
+  - {x: -18.319279, y: 0.25, z: -9.145683}
+  - {x: -13.717697, y: 0.25, z: -18.789356}
+  - {x: -13.699431, y: 0.25, z: 10.402582}
+  - {x: -10.526536, y: 0.25, z: 1.5665687}
+  - {x: -5.3247404, y: 0.25, z: 14.534466}
+  - {x: -1.8316299, y: 0.25, z: -18.997545}
+  - {x: -1.3947968, y: 0.25, z: -13.921119}
+  - {x: -1.4967752, y: 0.25, z: -10.65542}
+  - {x: 1.0465882, y: 0.25, z: 14.285253}
+  - {x: 5.5227337, y: 0.25, z: -18.457335}
+  - {x: 6.7353125, y: 0.25, z: -10.0310135}
+  - {x: 13.717381, y: 0.25, z: -5.0039425}
+  - {x: 13.190641, y: 0.25, z: 10.863192}
   agentPrefab: {fileID: 3077712204648589320, guid: 77d30c3410118344099cd07e7e706179, type: 3}
   foodPrefab: {fileID: 6014245900690354835, guid: 3538a45ce0affb8448f3b6f540e63905, type: 3}
   agentParent: {fileID: 1233425571}
   foodParent: {fileID: 1167303631}
   initialAgentQuantity: 40
-  initialFoodQuantity: 30
+  foodChancePercentage: 30
   maximumModifier: 2
   foodRange: 18
 --- !u!4 &148941348

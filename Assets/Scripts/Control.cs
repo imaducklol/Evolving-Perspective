@@ -8,14 +8,14 @@ public class Control : MonoBehaviour
 {
     public List<GameObject> foodObj = Storage.foodObj;
     public List<Vector3>    foodPos = Storage.foodPos;
-    public List<Agent>      agents  = Storage.agents;
+    private List<Agent>      agents  = Storage.agents;
 
     [SerializeField] GameObject agentPrefab;
     [SerializeField] GameObject foodPrefab;
     [SerializeField] Transform agentParent;
     [SerializeField] Transform foodParent;    
     [SerializeField] int initialAgentQuantity;
-    [SerializeField] int initialFoodQuantity;
+    [SerializeField] float foodChancePercentage;
     [SerializeField] int maximumModifier;
     [SerializeField] int foodRange;
     
@@ -232,7 +232,23 @@ public class Control : MonoBehaviour
         foodObj.Clear();
         foodPos.Clear();
         // Spawn Food
-        for (int i = 0; i < initialFoodQuantity; i++) {
+        for (int x = 0; x < 36; x+=4) {
+            for (int y = 0; y < 36; y+=4) {
+                if (Random.Range(0f, 1f) < foodChancePercentage / 100) {
+                    // Initiate with food prefab
+                    GameObject food = Instantiate(foodPrefab);
+                    // Random location across the floor
+                    float xOffset = Random.Range(-1f, 1f);
+                    float yOffset = Random.Range(-1f, 1f);
+                    food.transform.position = new Vector3(x-18+xOffset, .25f, y-18+yOffset);
+                    // Set the food parent for organization
+                    food.transform.SetParent(foodParent, false);
+                    foodPos.Add(food.transform.position);
+                    foodObj.Add(food);
+                }
+            }
+        }
+        /*for (int i = 0; i < foodQuantity; i++) {
             // The food
             // Initiate with food prefab
             GameObject food = Instantiate(foodPrefab);
@@ -242,7 +258,7 @@ public class Control : MonoBehaviour
             food.transform.SetParent(foodParent, false);
             foodPos.Add(food.transform.position);
             foodObj.Add(food);
-        }
+        }*/
     }
     
     void GetFood(Agent agent)
