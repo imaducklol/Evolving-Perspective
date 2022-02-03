@@ -1,7 +1,9 @@
 https://thoughtbot.com/blog/how-to-git-with-unity
 
 TO DO:
-spread food
 actually implement evolution
 dynamic colors
 cool evo graph
+
+DONE:
+spread food

@@ -110,13 +110,14 @@ public class Control : MonoBehaviour
             // Trying to get food, checking if a wall is still reachable in time and if theres any food left
             if (agent.foodGotten < 1 && !agent.gettingFood)
                 GetFood(agent);
-            if (WallAttainable(agent) && agent.foodGotten < 2 && foodPos.Count > 0 && !agent.gettingFood && !agent.goingHome)
+            if (WallAttainable(agent) && agent.foodGotten < 2 && 
+                foodPos.Count > 0 && !agent.gettingFood && !agent.goingHome)
                 GetFood(agent);
 
             // Going home
             if (agent.foodGotten >= 2 && !agent.goingHome)
                 Home(agent);
-            if(agent.foodGotten < 2 && !WallAttainable(agent))
+            if(agent.foodGotten == 1 && !WallAttainable(agent) && !agent.goingHome)
                 Home(agent);
             
             // Wander if close to end of last 
