@@ -12,6 +12,10 @@ public class PerAgentControl : MonoBehaviour
     public bool safe;
     public bool done;
 
+    public float size;
+    public float speed;
+    public float sense;
+
     private void OnTriggerEnter(Collider other)
     {
         Storage.foodPos.Remove(other.transform.position);

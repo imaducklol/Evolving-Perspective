@@ -16,7 +16,9 @@ public class Control : MonoBehaviour
     [SerializeField] Transform foodParent;    
     [SerializeField] int initialAgentQuantity;
     [SerializeField] float foodChancePercentage;
-    [SerializeField] int maximumModifier;
+    [SerializeField] float offspringVarience;
+    [SerializeField] float maximumModifier;
+    [SerializeField] float minimumModifier;
     [SerializeField] int foodRange;
     
     // Agent things
@@ -24,7 +26,6 @@ public class Control : MonoBehaviour
     private int speedMult   = 3;
     private float deathMult   = 1/20f;
     private int senseMult   = 5;
-    //private float offspringVarience = .2f;
     
     private bool cycleComplete = false;
 
@@ -157,25 +158,38 @@ public class Control : MonoBehaviour
         
         // Transfer surviving agents
         List<Agent> newAgents = new List<Agent>();
+        int index;
         foreach (Agent agent in agents)
         {
             if (agent.foodGotten > 0 && agent.safe)
             {
                 // Surviving
                 newAgents.Add(new Agent());
-                newAgents[newAgents.Count - 1].size     = agent.size;
-                newAgents[newAgents.Count - 1].speed    = agent.speed;
-                newAgents[newAgents.Count - 1].sense    = agent.sense;
-                newAgents[newAgents.Count - 1].position = agent.position; 
+                index = newAgents.Count - 1;
+                newAgents[index].size     = agent.size;
+                newAgents[index].speed    = agent.speed;
+                newAgents[index].sense    = agent.sense;
+                newAgents[index].position = agent.position; 
                 
                 // Offspring
                 if (agent.foodGotten > 1)
                 {
                     newAgents.Add(new Agent());
-                    newAgents[newAgents.Count - 1].size     = agent.size;
-                    newAgents[newAgents.Count - 1].speed    = agent.speed; // + Random.Range(-offspringVarience, offspringVarience);
-                    newAgents[newAgents.Count - 1].sense    = agent.sense; // + Random.Range(-offspringVarience, offspringVarience);
-                    newAgents[newAgents.Count - 1].position = agent.position;
+                    index = newAgents.Count - 1;
+                    newAgents[index].size     = agent.size;
+                    newAgents[index].speed    = agent.speed + Random.Range(-offspringVarience, offspringVarience);
+                    newAgents[index].sense    = agent.sense + Random.Range(-offspringVarience, offspringVarience);
+                    newAgents[index].position = agent.position;
+
+                    if (newAgents[index].size  < minimumModifier) newAgents[index].size  = minimumModifier;
+                    if (newAgents[index].speed < minimumModifier) newAgents[index].speed = minimumModifier;
+                    if (newAgents[index].sense < minimumModifier) newAgents[index].sense = minimumModifier;
+                    if (newAgents[index].size  > maximumModifier) newAgents[index].size  = maximumModifier;
+                    if (newAgents[index].speed > maximumModifier) newAgents[index].speed = maximumModifier;
+                    if (newAgents[index].sense > maximumModifier) newAgents[index].sense = maximumModifier;
+                    newAgents[index].obj.GetComponent<PerAgentControl>().size  = newAgents[index].size;
+                    newAgents[index].obj.GetComponent<PerAgentControl>().speed = newAgents[index].speed;
+                    newAgents[index].obj.GetComponent<PerAgentControl>().sense = newAgents[index].sense;
                 }
             }
         }
