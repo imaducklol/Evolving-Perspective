@@ -1,6 +1,8 @@
 https://thoughtbot.com/blog/how-to-git-with-unity
 
 finding food is borked, they dont go home when they should and sometimes theyre not marked as safe. 
+okay, figured part of it out, WallAttainable never returns false
+i dont think my calculation for remaining time is right
 
 TO DO:
 actually implement evolution

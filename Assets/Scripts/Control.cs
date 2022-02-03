@@ -106,9 +106,14 @@ public class Control : MonoBehaviour
                 //Debug.Log(agent.id + " reset wander called");
                 
             }
+
+            if (WallAttainable(agent))
+                agent.obj.GetComponent<Renderer>().material.color = Color.green;
+            else
+                agent.obj.GetComponent<Renderer>().material.color = Color.red;
             
             // Trying to get food, checking if a wall is still reachable in time and if theres any food left
-            if (agent.foodGotten < 1 && !agent.gettingFood)
+            if (agent.foodGotten == 0 && !agent.gettingFood)
                 GetFood(agent);
             if (WallAttainable(agent) && agent.foodGotten < 2 && 
                 foodPos.Count > 0 && !agent.gettingFood && !agent.goingHome)
@@ -131,7 +136,7 @@ public class Control : MonoBehaviour
             
 
             // Home?
-            if ((Mathf.Abs(agent.obj.transform.position.x) >= 19 || Mathf.Abs(agent.obj.transform.position.z) >= 19) && agent.foodGotten >= 1) 
+            if ((Mathf.Abs(agent.obj.transform.position.x) >= 19 || Mathf.Abs(agent.obj.transform.position.z) >= 19) && agent.goingHome) 
             {
                 agent.safe = true; 
                 agent.obj.GetComponent<PerAgentControl>().safe = true;
@@ -345,10 +350,10 @@ public class Control : MonoBehaviour
         float distToZpos = objPos.z - 20;
         float distToZneg = objPos.z + 20;
         
-        if (distToXpos < distToXpos * speed * timeRemaining &&
-            distToXneg < distToXneg * speed * timeRemaining &&
-            distToZpos < distToZpos * speed * timeRemaining &&
-            distToZneg < distToZneg * speed * timeRemaining)
+        if (distToXpos > speed * timeRemaining &&
+            distToXneg > speed * timeRemaining &&
+            distToZpos > speed * timeRemaining &&
+            distToZneg > speed * timeRemaining)
             return false;
         return true;
     }
