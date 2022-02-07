@@ -343,7 +343,7 @@ public class Control : MonoBehaviour
     {
         Vector3 objPos = agent.obj.transform.position;
         float speed = agent.obj.GetComponent<NavMeshAgent>().speed;
-        float timeRemaining = agent.energy / (agent.speed + agent.sense) * deathMult - 1;
+        float timeRemaining = agent.energy / (agent.speed + agent.sense);// * deathMult - 1;
         
         float distToXpos = objPos.x - 20;
         float distToXneg = objPos.x + 20;
