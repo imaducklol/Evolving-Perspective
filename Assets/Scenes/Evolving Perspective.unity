@@ -188,6 +188,7 @@ MonoBehaviour:
   foodChancePercentage: 30
   maximumModifier: 0
   foodRange: 18
+  FUCKTHISSHITENERGYVARIABLEGOOOOOOO: 0.085
 --- !u!4 &148941348
 Transform:
   m_ObjectHideFlags: 0

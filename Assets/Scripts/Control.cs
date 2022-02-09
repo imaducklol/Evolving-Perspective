@@ -18,6 +18,8 @@ public class Control : MonoBehaviour
     [SerializeField] float foodChancePercentage;
     [SerializeField] int maximumModifier;
     [SerializeField] int foodRange;
+
+    [SerializeField, Range(0,1)] float FUCKTHISSHITENERGYVARIABLEGOOOOOOO; 
     
     // Agent things
     private int wanderRange = 10;
@@ -76,11 +78,28 @@ public class Control : MonoBehaviour
 
     void Update()
     {
+    }
+
+    void FixedUpdate() 
+    {
         if (!cycleComplete) {UpdateAgents();}
+        //if (!cycleComplete) {AgentColor();}
         
         if (cycleComplete)  {NewAgentCycle();}
     }
 
+    void AgentColor ()
+    {
+        foreach (Agent agent in agents)
+        {
+            agent.energy = FUCKTHISSHITENERGYVARIABLEGOOOOOOO;
+
+            if (WallAttainable(agent))
+                agent.obj.GetComponent<Renderer>().material.color = Color.green;
+            else
+                agent.obj.GetComponent<Renderer>().material.color = Color.red;
+        }
+    }
 
     void UpdateAgents()
     {
@@ -91,6 +110,7 @@ public class Control : MonoBehaviour
             
             // Energy
             agent.energy -= Time.deltaTime * (agent.speed + agent.sense) * deathMult;
+            //agent.energy = FUCKTHISSHITENERGYVARIABLEGOOOOOOO;
             if (agent.energy <= 0 && !agent.safe) 
             {
                 agent.obj.SetActive(false);
@@ -343,12 +363,19 @@ public class Control : MonoBehaviour
     {
         Vector3 objPos = agent.obj.transform.position;
         float speed = agent.obj.GetComponent<NavMeshAgent>().speed;
-        float timeRemaining = agent.energy / (agent.speed + agent.sense);// * deathMult - 1;
-        
-        float distToXpos = objPos.x - 20;
-        float distToXneg = objPos.x + 20;
-        float distToZpos = objPos.z - 20;
-        float distToZneg = objPos.z + 20;
+        // IDK if or why this works but it seems good. -1 to give them leeway
+        float timeRemaining = agent.energy / ((agent.speed + agent.sense) * deathMult) - 1;
+        agent.obj.GetComponent<PerAgentControl>().timeRemaining =  timeRemaining;
+
+        float distToXneg = Mathf.Abs(objPos.x + 20);
+        float distToXpos = Mathf.Abs(objPos.x - 20);
+        float distToZneg = Mathf.Abs(objPos.z + 20);
+        float distToZpos = Mathf.Abs(objPos.z - 20);
+
+        agent.obj.GetComponent<PerAgentControl>().distToXpos = distToXpos;
+        agent.obj.GetComponent<PerAgentControl>().distToXneg = distToXneg;
+        agent.obj.GetComponent<PerAgentControl>().distToZpos = distToZpos;
+        agent.obj.GetComponent<PerAgentControl>().distToZneg = distToZneg;
         
         if (distToXpos > speed * timeRemaining &&
             distToXneg > speed * timeRemaining &&
@@ -368,5 +395,4 @@ public class Control : MonoBehaviour
         if (isComplete) {Debug.Log("complete");}
         cycleComplete = isComplete;
     }
-    
 }
