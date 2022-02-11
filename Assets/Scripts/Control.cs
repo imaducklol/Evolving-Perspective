@@ -15,7 +15,7 @@ public class Control : MonoBehaviour
     [SerializeField] Transform agentParent;
     [SerializeField] Transform foodParent;    
     [SerializeField] int initialAgentQuantity;
-    [SerializeField] float foodChancePercentage;
+    [SerializeField, Range(0, 100)] float foodChancePercentage;
     [SerializeField] int maximumModifier;
     [SerializeField] int foodRange;
 
@@ -129,7 +129,7 @@ public class Control : MonoBehaviour
 
             if (WallAttainable(agent))
                 agent.obj.GetComponent<Renderer>().material.color = Color.green;
-            else
+            else if (!agent.safe)
                 agent.obj.GetComponent<Renderer>().material.color = Color.red;
             
             // Trying to get food, checking if a wall is still reachable in time and if theres any food left
@@ -258,15 +258,16 @@ public class Control : MonoBehaviour
         foodObj.Clear();
         foodPos.Clear();
         // Spawn Food
+        // Funky addition so it doesnt spawn on the walls
         for (int x = 0; x < 36; x+=4) {
-            for (int y = 0; y < 36; y+=4) {
+            for (int y = 0; y < 34; y+=4) {
                 if (Random.Range(0f, 1f) < foodChancePercentage / 100) {
                     // Initiate with food prefab
                     GameObject food = Instantiate(foodPrefab);
                     // Random location across the floor
                     float xOffset = Random.Range(-1f, 1f);
                     float yOffset = Random.Range(-1f, 1f);
-                    food.transform.position = new Vector3(x-18+xOffset, .25f, y-18+yOffset);
+                    food.transform.position = new Vector3(x-17+xOffset, .25f, y-17+yOffset);
                     // Set the food parent for organization
                     food.transform.SetParent(foodParent, false);
                     foodPos.Add(food.transform.position);
@@ -364,7 +365,7 @@ public class Control : MonoBehaviour
         Vector3 objPos = agent.obj.transform.position;
         float speed = agent.obj.GetComponent<NavMeshAgent>().speed;
         // IDK if or why this works but it seems good. -1 to give them leeway
-        float timeRemaining = agent.energy / ((agent.speed + agent.sense) * deathMult) - 1;
+        float timeRemaining = agent.energy / ((agent.speed + agent.sense) * deathMult) - 2;
         agent.obj.GetComponent<PerAgentControl>().timeRemaining =  timeRemaining;
 
         float distToXneg = Mathf.Abs(objPos.x + 20);
