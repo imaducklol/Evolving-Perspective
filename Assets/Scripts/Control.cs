@@ -171,24 +171,23 @@ public class Control : MonoBehaviour
         CheckCompletion();
     }
 
-
     void NewAgentCycle()
     {
+        // Start off by destroying the old objects cause it makes my life easier
         foreach (Agent agent in agents) 
         {
             agent.position = agent.obj.transform.position;
             Destroy(agent.obj);
         }
         
-        
-        // Transfer surviving agents
+        // Transfer surviving agents to the next day 
         List<Agent> newAgents = new List<Agent>();
         int index;
         foreach (Agent agent in agents)
         {
             if (agent.foodGotten > 0 && agent.safe)
             {
-                // Surviving
+                // Copy agents that lived over
                 newAgents.Add(new Agent());
                 index = newAgents.Count - 1;
                 newAgents[index].size     = agent.size;
@@ -196,9 +195,10 @@ public class Control : MonoBehaviour
                 newAgents[index].sense    = agent.sense;
                 newAgents[index].position = agent.position; 
                 
-                // Offspring
+                // Using values from the parent agent, create offspring
                 if (agent.foodGotten > 1)
                 {
+                    // Values from parents plus some bit of varience
                     newAgents.Add(new Agent());
                     index = newAgents.Count - 1;
                     newAgents[index].size     = agent.size;
@@ -206,12 +206,15 @@ public class Control : MonoBehaviour
                     newAgents[index].sense    = agent.sense + Random.Range(-offspringVarience, offspringVarience);
                     newAgents[index].position = agent.position;
 
+                    // Bounds
                     if (newAgents[index].size  < minimumModifier) newAgents[index].size  = minimumModifier;
-                    if (newAgents[index].speed < minimumModifier) newAgents[index].speed = minimumModifier;
-                    if (newAgents[index].sense < minimumModifier) newAgents[index].sense = minimumModifier;
                     if (newAgents[index].size  > maximumModifier) newAgents[index].size  = maximumModifier;
+                    if (newAgents[index].speed < minimumModifier) newAgents[index].speed = minimumModifier;
                     if (newAgents[index].speed > maximumModifier) newAgents[index].speed = maximumModifier;
+                    if (newAgents[index].sense < minimumModifier) newAgents[index].sense = minimumModifier;
                     if (newAgents[index].sense > maximumModifier) newAgents[index].sense = maximumModifier;
+
+                    // Set object local values
                     newAgents[index].obj.GetComponent<PerAgentControl>().size  = newAgents[index].size;
                     newAgents[index].obj.GetComponent<PerAgentControl>().speed = newAgents[index].speed;
                     newAgents[index].obj.GetComponent<PerAgentControl>().sense = newAgents[index].sense;
