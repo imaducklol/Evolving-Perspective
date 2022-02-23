@@ -21,7 +21,8 @@ public class Control : MonoBehaviour
     [SerializeField] float minimumModifier;
     [SerializeField] int foodRange;
 
-    [SerializeField, Range(0,1)] float FUCKTHISSHITENERGYVARIABLEGOOOOOOO; 
+    [SerializeField, Range(0,1)] float FUCKTHISSHITENERGYVARIABLEGOOOOOOO;
+    [SerializeField] private bool WallAttainableColorToggle;
     
     // Agent things
     private int wanderRange = 10;
@@ -84,17 +85,15 @@ public class Control : MonoBehaviour
     void FixedUpdate() 
     {
         if (!cycleComplete) {UpdateAgents();}
-        //if (!cycleComplete) {AgentColor();}
+        //if (!cycleComplete) {WallattainableColor();}
         
         if (cycleComplete)  {NewAgentCycle();}
     }
 
-    void AgentColor ()
+    void WallAttainableColor ()
     {
         foreach (Agent agent in agents)
         {
-            agent.energy = FUCKTHISSHITENERGYVARIABLEGOOOOOOO;
-
             if (WallAttainable(agent))
                 agent.obj.GetComponent<Renderer>().material.color = Color.green;
             else
@@ -128,10 +127,7 @@ public class Control : MonoBehaviour
                 
             }
 
-            if (WallAttainable(agent))
-                agent.obj.GetComponent<Renderer>().material.color = Color.green;
-            else if (!agent.safe)
-                agent.obj.GetComponent<Renderer>().material.color = Color.red;
+            if (WallAttainableColorToggle) WallAttainableColor();
             
             // Trying to get food, checking if a wall is still reachable in time and if theres any food left
             if (agent.foodGotten == 0 && !agent.gettingFood)
@@ -215,9 +211,12 @@ public class Control : MonoBehaviour
                     if (newAgents[index].sense > maximumModifier) newAgents[index].sense = maximumModifier;
 
                     // Set object local values
+                    // But not actually cause the object doesnt exist yet
+                    /*
                     newAgents[index].obj.GetComponent<PerAgentControl>().size  = newAgents[index].size;
                     newAgents[index].obj.GetComponent<PerAgentControl>().speed = newAgents[index].speed;
                     newAgents[index].obj.GetComponent<PerAgentControl>().sense = newAgents[index].sense;
+                    */
                 }
             }
         }
@@ -225,11 +224,20 @@ public class Control : MonoBehaviour
         agents.Clear();
         agents.TrimExcess();
 
-        foreach (Agent agent in newAgents) {agents.Add(agent);} 
+        foreach (Agent agent in newAgents) {agents.Add(agent);}
+        
+        // ID shenanigins
+        for (int i = 0; i < agents.Count; i++) 
+        {
+            agents[i].id = i;
+            agents[i].obj.name = i.ToString();
+            agents[i].obj.GetComponent<PerAgentControl>().localID = i;
+        }
 
         // Recreating the objecters for each agent
         foreach (Agent agent in agents)
         {
+            Debug.Log(agent.id + " initiating");
             // The agent object
             // Initiate with agent prefab
             GameObject agentObj = Instantiate(agentPrefab);
@@ -248,14 +256,6 @@ public class Control : MonoBehaviour
             agent.obj.SetActive(true);
         }
         
-        // ID shenanigins
-        for (int i = 0; i < agents.Count; i++) 
-        {
-            agents[i].id = i;
-            agents[i].obj.name = i.ToString();
-            agents[i].obj.GetComponent<PerAgentControl>().localID = i;
-        }
-
         //foreach (Agent agent in Agents) {ResetAgent(agent);}
 
         // Destroy all the old deactivated food
