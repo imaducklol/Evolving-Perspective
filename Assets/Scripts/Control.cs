@@ -25,7 +25,7 @@ public class Control : MonoBehaviour
     
     [SerializeField, Range(0,1)] float FUCKTHISSHITENERGYVARIABLEGOOOOOOO;
     [SerializeField] private bool WallAttainableColorToggle;
-
+    
     [SerializeField] private int cycleCount = 0;
     
     // Agent things
