@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class Control : MonoBehaviour
 {
@@ -20,19 +22,21 @@ public class Control : MonoBehaviour
     [SerializeField] float maximumModifier;
     [SerializeField] float minimumModifier;
     [SerializeField] int foodRange;
-
+    
     [SerializeField, Range(0,1)] float FUCKTHISSHITENERGYVARIABLEGOOOOOOO;
     [SerializeField] private bool WallAttainableColorToggle;
+
+    [SerializeField] private int cycleCount = 0;
     
     // Agent things
     private int wanderRange = 10;
     private int speedMult   = 3;
-    private float deathMult   = 1/20f;
+    private float deathMult = 1/20f;
     private int senseMult   = 5;
     
     private bool cycleComplete = false;
-
-
+    
+    
     void Start()
     {
         SpawnFood();
@@ -209,14 +213,6 @@ public class Control : MonoBehaviour
                     if (newAgents[index].speed > maximumModifier) newAgents[index].speed = maximumModifier;
                     if (newAgents[index].sense < minimumModifier) newAgents[index].sense = minimumModifier;
                     if (newAgents[index].sense > maximumModifier) newAgents[index].sense = maximumModifier;
-
-                    // Set object local values
-                    // But not actually cause the object doesnt exist yet
-                    /*
-                    newAgents[index].obj.GetComponent<PerAgentControl>().size  = newAgents[index].size;
-                    newAgents[index].obj.GetComponent<PerAgentControl>().speed = newAgents[index].speed;
-                    newAgents[index].obj.GetComponent<PerAgentControl>().sense = newAgents[index].sense;
-                    */
                 }
             }
         }
@@ -226,34 +222,41 @@ public class Control : MonoBehaviour
 
         foreach (Agent agent in newAgents) {agents.Add(agent);}
         
+
+        // Recreating the gameobjects for each agent
+        foreach (Agent agent in agents)
+        {
+            // Initiate new agent object with agent prefab
+            GameObject agentObj = Instantiate(agentPrefab);
+            
+            // Set the object position to the previous generations position
+            agentObj.transform.position = agent.position;
+                        
+            // Set the agent parent for organization
+            agentObj.transform.SetParent(agentParent, false);
+
+            // Assign the gameobject to the agent object
+            agent.obj = agentObj;
+
+            // Nav Setup and initial nav point set
+            agent.obj.GetComponent<NavMeshAgent>().speed = agent.speed * speedMult;
+            Wander(agent.obj);
+
+            // Set object local values
+            agent.obj.GetComponent<PerAgentControl>().size  = agent.size;
+            agent.obj.GetComponent<PerAgentControl>().speed = agent.speed;
+            agent.obj.GetComponent<PerAgentControl>().sense = agent.sense;
+            
+            
+            agent.obj.SetActive(true);
+        }
+        
         // ID shenanigins
         for (int i = 0; i < agents.Count; i++) 
         {
             agents[i].id = i;
             agents[i].obj.name = i.ToString();
             agents[i].obj.GetComponent<PerAgentControl>().localID = i;
-        }
-
-        // Recreating the objecters for each agent
-        foreach (Agent agent in agents)
-        {
-            Debug.Log(agent.id + " initiating");
-            // The agent object
-            // Initiate with agent prefab
-            GameObject agentObj = Instantiate(agentPrefab);
-
-            agentObj.transform.position = agent.position;
-                        
-            // Set the agent parent for organization
-            agentObj.transform.SetParent(agentParent, false);
-
-            agent.obj = agentObj;
-
-            // Nav Setup
-            agent.obj.GetComponent<NavMeshAgent>().speed = agent.speed * speedMult;
-            Wander(agent.obj);
-
-            agent.obj.SetActive(true);
         }
         
         //foreach (Agent agent in Agents) {ResetAgent(agent);}
@@ -267,6 +270,7 @@ public class Control : MonoBehaviour
         // Spawn new food
         SpawnFood();
 
+        cycleCount += 1;
         cycleComplete = false;
     }
 

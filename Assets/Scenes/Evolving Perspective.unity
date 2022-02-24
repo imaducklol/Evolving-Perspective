@@ -186,12 +186,13 @@ MonoBehaviour:
   foodParent: {fileID: 1167303631}
   initialAgentQuantity: 40
   foodChancePercentage: 30
-  offspringVarience: 0
-  maximumModifier: 0
-  minimumModifier: 0
+  offspringVarience: 0.5
+  maximumModifier: 2
+  minimumModifier: 0.1
   foodRange: 18
   FUCKTHISSHITENERGYVARIABLEGOOOOOOO: 0.085
-  WallAttainableColorToggle: 1
+  WallAttainableColorToggle: 0
+  cycleCount: 0
 --- !u!4 &148941348
 Transform:
   m_ObjectHideFlags: 0
