@@ -220,7 +220,8 @@ public class Control : MonoBehaviour
         agents.Clear();
         agents.TrimExcess();
 
-        foreach (Agent agent in newAgents) {agents.Add(agent);}
+        foreach (Agent agent in newAgents) agents.Add(agent);
+        if (agents.Count == 0) Debug.Break();
         
 
         // Recreating the gameobjects for each agent

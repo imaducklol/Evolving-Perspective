@@ -185,9 +185,9 @@ MonoBehaviour:
   agentParent: {fileID: 1233425571}
   foodParent: {fileID: 1167303631}
   initialAgentQuantity: 40
-  foodChancePercentage: 30
-  offspringVarience: 0.5
-  maximumModifier: 2
+  foodChancePercentage: 40
+  offspringVarience: 0.25
+  maximumModifier: 4
   minimumModifier: 0.1
   foodRange: 18
   FUCKTHISSHITENERGYVARIABLEGOOOOOOO: 0.085
