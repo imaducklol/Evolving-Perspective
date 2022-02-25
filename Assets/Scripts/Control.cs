@@ -394,11 +394,6 @@ public class Control : MonoBehaviour
         float distToZneg = Mathf.Abs(objPos.z + 20);
         float distToZpos = Mathf.Abs(objPos.z - 20);
 
-        agent.obj.GetComponent<PerAgentControl>().distToXpos = distToXpos;
-        agent.obj.GetComponent<PerAgentControl>().distToXneg = distToXneg;
-        agent.obj.GetComponent<PerAgentControl>().distToZpos = distToZpos;
-        agent.obj.GetComponent<PerAgentControl>().distToZneg = distToZneg;
-        
         if (distToXpos > speed * timeRemaining &&
             distToXneg > speed * timeRemaining &&
             distToZpos > speed * timeRemaining &&

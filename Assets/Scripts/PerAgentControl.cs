@@ -9,10 +9,6 @@ public class PerAgentControl : MonoBehaviour
     public int  collectedFood;
     
     public float timeRemaining;
-    public float distToXpos;
-    public float distToXneg;
-    public float distToZpos;
-    public float distToZneg;
 
     public bool gettingFood;
     public bool goingHome;
