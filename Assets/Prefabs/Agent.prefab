@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1296190047851675692}
   m_Layer: 0
   m_Name: Agent
-  m_TagString: Untagged
+  m_TagString: Agent
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -132,3 +132,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a520b1f0a8c3af78aa7941e2236e02ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  localID: 0
+  collectedFood: 0
+  timeRemaining: 0
+  gettingFood: 0
+  goingHome: 0
+  safe: 0
+  done: 0
+  size: 0
+  speed: 0
+  sense: 0

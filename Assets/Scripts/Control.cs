@@ -17,16 +17,22 @@ public class Control : MonoBehaviour
     [SerializeField] Transform agentParent;
     [SerializeField] Transform foodParent;    
     [SerializeField] int initialAgentQuantity;
-    [SerializeField, Range(0, 100)] float foodChancePercentage;
     [SerializeField] float offspringVarience;
     [SerializeField] float maximumModifier;
     [SerializeField] float minimumModifier;
+    [SerializeField] bool randomFoodDist;
+    [SerializeField] private int foodQuantity;
     [SerializeField] int foodRange;
+    [SerializeField, Range(0, 100)] float foodChancePercentage;
     
     [SerializeField, Range(0,1)] float FUCKTHISSHITENERGYVARIABLEGOOOOOOO;
     [SerializeField] private bool WallAttainableColorToggle;
     
+    public bool DONTCHANGESTUFFUNDERTHIS;
     [SerializeField] private int cycleCount = 0;
+    [SerializeField] private float averageSize;
+    [SerializeField] private float averageSpeed;
+    [SerializeField] private float averageSense;
     
     // Agent things
     private int wanderRange = 10;
@@ -74,12 +80,18 @@ public class Control : MonoBehaviour
             agents[i].obj.name = i.ToString();
             agent.GetComponent<PerAgentControl>().localID = i;
             
+            // Color
+            agents[i].obj.GetComponent<Renderer>().material.color = new Color(agents[i].speed / 4, 0, 1);
+
             
             // Nav Setup
             agent.GetComponent<NavMeshAgent>().speed = agents[agents.Count - 1].speed * speedMult;
             Wander(agents[agents.Count-1].obj);
             
         }
+        
+        // Average stats of each agent
+        GetAverages();
     }
 
     void Update()
@@ -201,7 +213,7 @@ public class Control : MonoBehaviour
                     // Values from parents plus some bit of varience
                     newAgents.Add(new Agent());
                     index = newAgents.Count - 1;
-                    newAgents[index].size     = agent.size;
+                    newAgents[index].size     = agent.size + Random.Range(-offspringVarience, offspringVarience);
                     newAgents[index].speed    = agent.speed + Random.Range(-offspringVarience, offspringVarience);
                     newAgents[index].sense    = agent.sense + Random.Range(-offspringVarience, offspringVarience);
                     newAgents[index].position = agent.position;
@@ -239,10 +251,14 @@ public class Control : MonoBehaviour
             // Assign the gameobject to the agent object
             agent.obj = agentObj;
 
-            // Nav Setup and initial nav point set
+            // Nav setup and initial nav point set
             agent.obj.GetComponent<NavMeshAgent>().speed = agent.speed * speedMult;
             Wander(agent.obj);
 
+            // Agent color setup
+            // Speed
+            agent.obj.GetComponent<Renderer>().material.color = new Color(agent.speed / 4 , 0, 1);
+            
             // Set object local values
             agent.obj.GetComponent<PerAgentControl>().size  = agent.size;
             agent.obj.GetComponent<PerAgentControl>().speed = agent.speed;
@@ -270,7 +286,10 @@ public class Control : MonoBehaviour
         foodPos.Clear();
         // Spawn new food
         SpawnFood();
-
+        
+        // Get new averages
+        GetAverages();
+        
         cycleCount += 1;
         cycleComplete = false;
     }
@@ -281,33 +300,40 @@ public class Control : MonoBehaviour
         foodPos.Clear();
         // Spawn Food
         // Funky addition so it doesnt spawn on the walls
-        for (int x = 0; x < 36; x+=4) {
-            for (int y = 0; y < 34; y+=4) {
-                if (Random.Range(0f, 1f) < foodChancePercentage / 100) {
-                    // Initiate with food prefab
-                    GameObject food = Instantiate(foodPrefab);
-                    // Random location across the floor
-                    float xOffset = Random.Range(-1f, 1f);
-                    float yOffset = Random.Range(-1f, 1f);
-                    food.transform.position = new Vector3(x-17+xOffset, .25f, y-17+yOffset);
-                    // Set the food parent for organization
-                    food.transform.SetParent(foodParent, false);
-                    foodPos.Add(food.transform.position);
-                    foodObj.Add(food);
+        if (randomFoodDist) {
+            for (int i = 0; i < foodQuantity; i++) {
+                // The food
+                // Initiate with food prefab
+                GameObject food = Instantiate(foodPrefab);
+                // Random location across the floor
+                food.transform.position = new Vector3(Random.Range(-foodRange, foodRange), .5f, Random.Range(-foodRange, foodRange));
+                // Set the food parent for organization
+                food.transform.SetParent(foodParent, false);
+                foodPos.Add(food.transform.position);
+                foodObj.Add(food);
+            }
+        }
+        else {
+            for (int x = 0; x < 36; x += 4)
+            {
+                for (int y = 0; y < 36; y += 4)
+                {
+                    if (Random.Range(0f, 1f) < foodChancePercentage / 100)
+                    {
+                        // Initiate with food prefab
+                        GameObject food = Instantiate(foodPrefab);
+                        // Random location across the floor
+                        float xOffset = Random.Range(-1f, 1f);
+                        float yOffset = Random.Range(-1f, 1f);
+                        food.transform.position = new Vector3(x - 17 + xOffset, .25f, y - 17 + yOffset);
+                        // Set the food parent for organization
+                        food.transform.SetParent(foodParent, false);
+                        foodPos.Add(food.transform.position);
+                        foodObj.Add(food);
+                    }
                 }
             }
         }
-        /*for (int i = 0; i < foodQuantity; i++) {
-            // The food
-            // Initiate with food prefab
-            GameObject food = Instantiate(foodPrefab);
-            // Random location across the floor
-            food.transform.position = new Vector3(Random.Range(-foodRange, foodRange), .5f, Random.Range(-foodRange, foodRange));
-            // Set the food parent for organization
-            food.transform.SetParent(foodParent, false);
-            foodPos.Add(food.transform.position);
-            foodObj.Add(food);
-        }*/
     }
     
     void GetFood(Agent agent)
@@ -412,5 +438,26 @@ public class Control : MonoBehaviour
         }
         if (isComplete) {Debug.Log("complete");}
         cycleComplete = isComplete;
+    }
+
+    void GetAverages()
+    {
+        float size  = 0;
+        float speed = 0;
+        float sense = 0;
+        foreach (Agent agent in agents)
+        {
+            size  += agent.size;
+            speed += agent.speed;
+            sense += agent.sense;
+        }
+
+        size = size / agents.Count;
+        speed = speed / agents.Count;
+        sense = sense / agents.Count;
+
+        averageSize  = size;
+        averageSpeed = speed;
+        averageSense = sense;
     }
 }
