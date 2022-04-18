@@ -4,3 +4,5 @@ TO DO:
 make sure evolution is working
 dynamic colors
 cool evo graph
+
+TURN STOPPING DISTANCE DOWN YOU MORON
