@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
+using TMPro;
 
 public class Control : MonoBehaviour
 {
@@ -12,6 +13,9 @@ public class Control : MonoBehaviour
     public List<Vector3>    foodPos = Storage.foodPos;
     private List<Agent>      agents  = Storage.agents;
 
+    [SerializeField] private TMP_Text speedText;
+    [SerializeField] private TMP_Text senseText;
+    [SerializeField] private TMP_Text sizeText;
     [SerializeField] GameObject agentPrefab;
     [SerializeField] GameObject foodPrefab;
     [SerializeField] Transform agentParent;
@@ -30,9 +34,9 @@ public class Control : MonoBehaviour
     
     public bool DONTCHANGESTUFFUNDERTHIS;
     [SerializeField] private int cycleCount = 0;
-    [SerializeField] private float averageSize;
     [SerializeField] private float averageSpeed;
     [SerializeField] private float averageSense;
+    [SerializeField] private float averageSize;
     
     // Agent things
     private int wanderRange = 10;
@@ -213,7 +217,7 @@ public class Control : MonoBehaviour
                     // Values from parents plus some bit of varience
                     newAgents.Add(new Agent());
                     index = newAgents.Count - 1;
-                    newAgents[index].size     = agent.size + Random.Range(-offspringVarience, offspringVarience);
+                    newAgents[index].size     = agent.size + Random.Range(-offspringVarience, offspringVarience)*2;
                     newAgents[index].speed    = agent.speed + Random.Range(-offspringVarience, offspringVarience);
                     newAgents[index].sense    = agent.sense + Random.Range(-offspringVarience, offspringVarience);
                     newAgents[index].position = agent.position;
@@ -258,6 +262,8 @@ public class Control : MonoBehaviour
             // Agent color setup
             // Speed
             agent.obj.GetComponent<Renderer>().material.color = new Color(agent.speed / 4 , 0, 1);
+
+            agent.obj.transform.localScale =  new Vector3(agent.size, agent.size, agent.size);
             
             // Set object local values
             agent.obj.GetComponent<PerAgentControl>().size  = agent.size;
@@ -459,5 +465,9 @@ public class Control : MonoBehaviour
         averageSize  = size;
         averageSpeed = speed;
         averageSense = sense;
+        
+        speedText.text = "Average speed: " + Math.Round(speed, 2);
+        senseText.text = "Average sense: " + Math.Round(sense, 2);
+        sizeText.text  = "Average size: "  + Math.Round(size,  2);
     }
 }
